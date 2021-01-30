@@ -33,13 +33,19 @@ class AnnotationPresentationInfo(
         holder: AnnotationHolder,
         diagnostics: Collection<Diagnostic>,
         annotationBuilderByDiagnostic: MutableMap<Diagnostic, Annotation>? = null,
-        fixesMap: MultiMap<Diagnostic, IntentionAction>?
+        fixesMap: MultiMap<Diagnostic, IntentionAction>?,
+        calculatingInProgress: Boolean
     ) {
         for (range in ranges) {
             for (diagnostic in diagnostics) {
                 create(diagnostic, range, holder) { annotation ->
                     annotationBuilderByDiagnostic?.put(diagnostic, annotation)
-                    fixesMap?.let { applyFixes(it, diagnostic, annotation) }
+                    if (fixesMap != null) {
+                        applyFixes(fixesMap, diagnostic, annotation)
+                    }
+                    if (calculatingInProgress) {
+                        annotation.registerFix(CalculatingIntentionAction(), range)
+                    }
                 }
             }
         }

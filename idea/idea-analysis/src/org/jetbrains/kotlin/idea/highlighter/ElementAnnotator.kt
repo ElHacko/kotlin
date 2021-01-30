@@ -33,20 +33,22 @@ internal class ElementAnnotator(
         holder: AnnotationHolder,
         diagnostics: Collection<Diagnostic>,
         annotationByDiagnostic: MutableMap<Diagnostic, Annotation>? = null,
-        noFixes: Boolean
+        noFixes: Boolean,
+        calculatingInProgress: Boolean
     ) = diagnostics.groupBy { it.factory }
         .forEach {
-            registerSameFactoryDiagnosticsAnnotations(holder, it.value, annotationByDiagnostic, noFixes)
+            registerSameFactoryDiagnosticsAnnotations(holder, it.value, annotationByDiagnostic, noFixes, calculatingInProgress)
         }
 
     private fun registerSameFactoryDiagnosticsAnnotations(
         holder: AnnotationHolder,
         diagnostics: Collection<Diagnostic>,
         annotationByDiagnostic: MutableMap<Diagnostic, Annotation>? = null,
-        noFixes: Boolean
+        noFixes: Boolean,
+        calculatingInProgress: Boolean
     ) {
         val presentationInfo = presentationInfo(diagnostics) ?: return
-        setUpAnnotations(holder, diagnostics, presentationInfo, annotationByDiagnostic, noFixes)
+        setUpAnnotations(holder, diagnostics, presentationInfo, annotationByDiagnostic, noFixes, calculatingInProgress)
     }
 
     fun registerDiagnosticsQuickFixes(
@@ -145,12 +147,13 @@ internal class ElementAnnotator(
         diagnostics: Collection<Diagnostic>,
         data: AnnotationPresentationInfo,
         annotationByDiagnostic: MutableMap<Diagnostic, Annotation>? = null,
-        noFixes: Boolean
+        noFixes: Boolean,
+        calculatingInProgress: Boolean
     ) {
         val fixesMap =
             createFixesMap(diagnostics, noFixes)
 
-        data.processDiagnostics(holder, diagnostics, annotationByDiagnostic, fixesMap)
+        data.processDiagnostics(holder, diagnostics, annotationByDiagnostic, fixesMap, calculatingInProgress)
     }
 
     private fun createFixesMap(
